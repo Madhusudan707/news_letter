@@ -1,6 +1,6 @@
 (function(window, document) {
   // Configuration
-  const TRACKER_URL = 'https://your-domain.com/api/track';
+  const TRACKER_URL = 'https://freemail0.netlify.app/';
   const DEBUG = true;
 
   function generateUUID() {
