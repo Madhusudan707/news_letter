@@ -2,6 +2,38 @@
   // Configuration
   const TRACKER_URL = 'https://freemail0.netlify.app/';
   const SCRIPT_ID = 'newsletter-tracker';
+  
+  // Valid event types
+  const VALID_EVENTS = {
+    page_view: true,
+    form_submit: true,
+    click: true,
+    scroll: true,
+    custom: true,
+    form_interaction: true,
+    content_interaction: true,
+    subscription: true
+  };
+
+  // Event validation function
+  function validateEvent(data) {
+    if (!data.type || !VALID_EVENTS[data.type]) {
+      console.error('Invalid event type:', data.type);
+      return false;
+    }
+
+    if (!data.clientId) {
+      console.error('Missing client ID');
+      return false;
+    }
+
+    if (!data.timestamp) {
+      console.error('Missing timestamp');
+      return false;
+    }
+
+    return true;
+  }
 
   // Initialize tracker
   window.NewsletterTracker = window.NewsletterTracker || {
@@ -96,6 +128,11 @@
 
     sendData: async function(data) {
       try {
+        // Validate event before sending
+        if (!validateEvent(data)) {
+          throw new Error('Invalid event data');
+        }
+
         const response = await fetch(`${TRACKER_URL}/api/track`, {
           method: 'POST',
           headers: {
