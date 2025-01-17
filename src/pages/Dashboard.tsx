@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Users, Mail, BarChart3, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
+import { useClient } from '../lib/clientContext';
 
 interface DashboardStats {
   totalSubscribers: number;
@@ -37,7 +38,8 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
   );
 }
 
-function Dashboard() {
+export default function Dashboard() {
+  const { selectedClient } = useClient();
   const [stats, setStats] = useState<DashboardStats>({
     totalSubscribers: 0,
     campaignsSent: 0,
@@ -134,7 +136,7 @@ function Dashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Dashboard for {selectedClient?.name || selectedClient?.client_id}</h1>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -215,5 +217,3 @@ function Dashboard() {
     </div>
   );
 }
-
-export default Dashboard;

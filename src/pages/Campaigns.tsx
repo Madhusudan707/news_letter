@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 import EmailBuilder from '../components/EmailBuilder';
 import { TemplatePicker, Template } from '../components/EmailTemplates';
-import { sendCampaign, getSubscribers } from '../lib/mailbuster';
+import { sendCampaign } from '../lib/mailbuster';
 import { SegmentationBuilder } from '../components/SegmentationBuilder';
 
 interface Campaign {
@@ -40,7 +40,7 @@ interface PendingImage {
 function CampaignModal({ 
   isOpen, 
   onClose, 
-  initialData = { name: '', subject: '', content: '' },
+  initialData = { name: '', subject: '', content: '', recipients: [] },
   onSubmit,
   title 
 }: { 
@@ -520,7 +520,7 @@ function Campaigns() {
     setReuseCampaign({
       ...campaign,
       name: `${campaign.name} (Copy)`,
-      status: 'draft',
+      status: 'draft' as const,
       sent_at: null,
       scheduled_for: null
     });

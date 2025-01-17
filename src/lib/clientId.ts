@@ -1,33 +1,40 @@
 import { supabase } from './supabase';
 import { nanoid } from 'nanoid';
+import { useAuth } from './auth';
 
 interface ClientConfig {
-  domain: string;
+  website: string;
   name: string;
   email: string;
 }
 
 export async function generateClientId(config: ClientConfig) {
-  // Generate a unique client ID
-  const clientId = `nlt_${nanoid(16)}`; // 'nlt' prefix for 'newsletter tracker'
-  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
+  const clientId = `nlt_${nanoid(16)}`;
+  const apiKey = `key_${nanoid(32)}`;
+
   try {
-    // Store client information in the database
     const { data, error } = await supabase
       .from('clients')
       .insert({
+        user_id: user.id,
         client_id: clientId,
-        domain: config.domain,
+        api_key: apiKey,
+        website: config.website,
         name: config.name,
         email: config.email,
         status: 'active',
-        created_at: new Date().toISOString(),
-        api_key: `key_${nanoid(32)}` // Generate API key for client
+        created_at: new Date().toISOString()
       })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(`Database error: ${error.message}`);
+    }
 
     return {
       clientId: data.client_id,

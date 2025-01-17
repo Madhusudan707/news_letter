@@ -11,9 +11,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true
-  },
-  storage: {
-    retryAttempts: 3,
-    retryDelay: 500
   }
 });

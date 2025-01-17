@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { generateClientId } from '../lib/clientId';
+import { EmbedCodeGenerator } from './EmbedCodeGenerator';
 
 export function ClientRegistration() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [clientInfo, setClientInfo] = useState<{
     clientId: string;
     apiKey: string;
@@ -11,20 +13,28 @@ export function ClientRegistration() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     const formData = new FormData(e.currentTarget);
     
     try {
+      console.log('Submitting registration with data:', {
+        website: formData.get('website'),
+        name: formData.get('name'),
+        email: formData.get('email')
+      });
+
       const result = await generateClientId({
-        domain: formData.get('domain') as string,
+        website: formData.get('website') as string,
         name: formData.get('name') as string,
         email: formData.get('email') as string
       });
 
+      console.log('Registration result:', result);
       setClientInfo(result);
     } catch (error) {
-      console.error('Error registering client:', error);
-      alert('Failed to generate client ID. Please try again.');
+      console.error('Error in registration:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate client ID');
     } finally {
       setLoading(false);
     }
@@ -32,15 +42,21 @@ export function ClientRegistration() {
 
   return (
     <div className="max-w-md mx-auto p-6">
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
+
       {!clientInfo ? (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Website Domain
+              Website
             </label>
             <input
               type="text"
-              name="domain"
+              name="website"
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
               placeholder="example.com"
@@ -91,14 +107,11 @@ export function ClientRegistration() {
             </div>
           </div>
           
-          <div className="text-sm text-gray-500">
-            <p>Please save these credentials securely. You'll need them to:</p>
-            <ul className="list-disc ml-5 mt-2">
-              <li>Initialize the tracking script</li>
-              <li>Access the API</li>
-              <li>View analytics</li>
-            </ul>
-          </div>
+          <EmbedCodeGenerator 
+            clientId={clientInfo.clientId} 
+            onCopy={() => {}}
+            copied={false}
+          />
         </div>
       )}
     </div>

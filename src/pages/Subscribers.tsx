@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Plus, UserPlus, Trash2, Mail, UserMinus, Download, Upload, X, Send } from 'lucide-react';
+import {  UserPlus, Trash2, Mail, UserMinus, Download, Upload, X, Send } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 import { sendCampaign } from '../lib/mailbuster';

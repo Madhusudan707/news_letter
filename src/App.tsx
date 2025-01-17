@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Mail, Users, BarChart3, Settings, LogOut } from 'lucide-react';
+import { Mail, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Campaigns from './pages/Campaigns';
 import Subscribers from './pages/Subscribers';
@@ -9,6 +9,10 @@ import Auth from './pages/Auth';
 import { AuthProvider, useAuth } from './lib/auth';
 import { SubscriberTracker } from './components/SubscriberTracker';
 import { getCurrentSubscriberId } from './lib/tracking';
+import { ClientRegistration } from './components/ClientRegistration';
+import SettingsPage from './pages/Settings';
+import { ClientSelector } from './components/ClientSelector';
+import { ClientProvider } from './lib/clientContext';
 
 function Navigation() {
   const location = useLocation();
@@ -29,6 +33,7 @@ function Navigation() {
             <div className="flex-shrink-0 flex items-center">
               <Mail className="h-8 w-8 text-indigo-600" />
               <span className="ml-2 text-xl font-bold text-gray-900">MailMaster</span>
+              <ClientSelector />
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
@@ -71,12 +76,21 @@ function Navigation() {
               >
                 Analytics
               </Link>
+              {/* <Link
+                to="/settings"
+                className="bg-indigo-600 p-1 rounded-full text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <SettingsIcon className="h-6 w-6" />
+              </Link> */}
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-            <button className="bg-indigo-600 p-1 rounded-full text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              <Settings className="h-6 w-6" />
-            </button>
+            <Link
+              to="/settings"
+              className="bg-indigo-600 p-1 rounded-full text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <SettingsIcon className="h-6 w-6" />
+            </Link>
             <button
               onClick={() => signOut()}
               className="bg-gray-200 p-1 rounded-full text-gray-600 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
@@ -126,6 +140,8 @@ function AppRoutes() {
                   <Route path="/campaigns" element={<Campaigns />} />
                   <Route path="/subscribers" element={<Subscribers />} />
                   <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/register" element={<ClientRegistration />} />
                 </Routes>
               </main>
             </>
@@ -144,9 +160,11 @@ function App() {
       {subscriberId && <SubscriberTracker subscriberId={subscriberId} />}
       <Router>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
-            <AppRoutes />
-          </div>
+        <ClientProvider>
+            <div className="min-h-screen bg-gray-50">
+              <AppRoutes />
+            </div>
+            </ClientProvider>
         </AuthProvider>
       </Router>
     </>
