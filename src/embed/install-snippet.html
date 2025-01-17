@@ -1,0 +1,29 @@
+<!-- Newsletter Tracking Code -->
+<script>
+  (function(w,d,s,id,c) {
+    if (d.getElementById(id)) return;
+    
+    var js = d.createElement(s);
+    js.id = id;
+    js.src = 'https://your-newsletter-domain.com/tracker.js';
+    js.async = true;
+    js.onload = function() {
+      w.NewsletterTracker.init(c);
+    };
+    
+    var fjs = d.getElementsByTagName(s)[0];
+    fjs.parentNode.insertBefore(js, fjs);
+  }(window, document, 'script', 'newsletter-tracker', 'CLIENT_ID_HERE'));
+</script>
+
+<!-- Newsletter Subscription Form Example -->
+<form data-newsletter-form="signup">
+  <input type="email" placeholder="Enter your email" required>
+  <button type="submit">Subscribe</button>
+</form>
+
+<!-- Content Tracking Example -->
+<article data-content-id="article-1" data-content-type="blog">
+  <h1>Article Title</h1>
+  <!-- Article content -->
+</article> 
