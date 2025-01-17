@@ -128,20 +128,29 @@
 
     sendData: async function(data) {
       try {
-        // Validate event before sending
         if (!validateEvent(data)) {
           throw new Error('Invalid event data');
         }
 
-        const response = await fetch(`${TRACKER_URL}/api/track`, {
+        const response = await fetch(TRACKER_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(data)
+          body: JSON.stringify({
+            clientId: this.clientId,
+            type: data.type,
+            url: window.location.href,
+            ...data
+          }),
+          credentials: 'include' // Include cookies if needed
         });
 
-        if (!response.ok) throw new Error('Failed to send tracking data');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log(`Event tracked: ${data.type}`);
       } catch (error) {
         console.error('Tracking error:', error);
       }
