@@ -1,168 +1,94 @@
 (function(window, document) {
   // Configuration
-  const TRACKER_URL = 'https://freemail0.netlify.app/';
-  const SCRIPT_ID = 'newsletter-tracker';
-  
-  // Valid event types
-  const VALID_EVENTS = {
-    page_view: true,
-    form_submit: true,
-    click: true,
-    scroll: true,
-    custom: true,
-    form_interaction: true,
-    content_interaction: true,
-    subscription: true
-  };
+  const TRACKER_URL = 'https://your-domain.com/api/track';
+  const DEBUG = true;
 
-  // Event validation function
-  function validateEvent(data) {
-    if (!data.type || !VALID_EVENTS[data.type]) {
-      console.error('Invalid event type:', data.type);
-      return false;
-    }
-
-    if (!data.clientId) {
-      console.error('Missing client ID');
-      return false;
-    }
-
-    if (!data.timestamp) {
-      console.error('Missing timestamp');
-      return false;
-    }
-
-    return true;
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 
-  // Initialize tracker
-  window.NewsletterTracker = window.NewsletterTracker || {
-    init: function(clientId) {
-      this.clientId = clientId;
-      this.setup();
-    },
+  function getVisitCount() {
+    let visits = parseInt(localStorage.getItem('nlt_visit_count') || '0');
+    visits++;
+    localStorage.setItem('nlt_visit_count', visits.toString());
+    return visits;
+  }
 
-    setup: function() {
-      // Track page views
-      this.trackPageView();
-      
-      // Track clicks
-      document.addEventListener('click', this.handleClick.bind(this));
-      
-      // Track form submissions
-      this.setupFormTracking();
-    },
+  function getLastVisit() {
+    return localStorage.getItem('nlt_last_visit');
+  }
 
-    trackPageView: function() {
-      const data = {
-        clientId: this.clientId,
-        type: 'pageview',
-        url: window.location.href,
-        path: window.location.pathname,
-        title: document.title,
-        timestamp: new Date().toISOString()
-      };
+  function updateLastVisit() {
+    const now = new Date().toISOString();
+    localStorage.setItem('nlt_last_visit', now);
+    return now;
+  }
 
-      this.sendData(data);
-    },
+  function getAnonymousId() {
+    const storageKey = 'nlt_anonymous_id';
+    let anonymousId = localStorage.getItem(storageKey);
+    
+    if (!anonymousId) {
+      anonymousId = 'anon_' + generateUUID();
+      localStorage.setItem(storageKey, anonymousId);
+    }
 
-    handleClick: function(e) {
-      const target = e.target;
-      
-      // Track newsletter form interactions
-      if (target.closest('[data-newsletter-form]')) {
-        this.trackFormInteraction(target);
-      }
+    return {
+      id: anonymousId,
+      isReturning: !!localStorage.getItem('nlt_last_visit'),
+      visitCount: getVisitCount(),
+      lastVisit: getLastVisit()
+    };
+  }
 
-      // Track content interactions
-      if (target.closest('[data-content-id]')) {
-        this.trackContentInteraction(target);
-      }
-    },
+  window.NewsletterTracker = {
+    clientId: null,
+    anonymousData: getAnonymousId(),
+    pageStartTime: Date.now(),
 
-    trackFormInteraction: function(element) {
-      const form = element.closest('[data-newsletter-form]');
-      const data = {
-        clientId: this.clientId,
-        type: 'form_interaction',
-        formId: form.getAttribute('data-newsletter-form'),
-        element: element.tagName,
-        action: element.type || 'click',
-        timestamp: new Date().toISOString()
-      };
-
-      this.sendData(data);
-    },
-
-    trackContentInteraction: function(element) {
-      const content = element.closest('[data-content-id]');
-      const data = {
-        clientId: this.clientId,
-        type: 'content_interaction',
-        contentId: content.getAttribute('data-content-id'),
-        contentType: content.getAttribute('data-content-type') || 'unknown',
-        timestamp: new Date().toISOString()
-      };
-
-      this.sendData(data);
-    },
-
-    setupFormTracking: function() {
-      document.querySelectorAll('[data-newsletter-form]').forEach(form => {
-        form.addEventListener('submit', (e) => {
-          e.preventDefault();
-          
-          const email = form.querySelector('input[type="email"]').value;
-          const data = {
-            clientId: this.clientId,
-            type: 'subscription',
-            email: email,
-            formId: form.getAttribute('data-newsletter-form'),
-            timestamp: new Date().toISOString()
-          };
-
-          this.sendData(data);
-        });
-      });
-    },
-
-    sendData: async function(data) {
+    sendEvent: async function(type, eventData) {
       try {
-        if (!validateEvent(data)) {
-          throw new Error('Invalid event data');
-        }
+        const data = {
+          clientId: this.clientId,
+          anonymousId: this.anonymousData.id,
+          isReturning: this.anonymousData.isReturning,
+          visitCount: this.anonymousData.visitCount,
+          lastVisit: this.anonymousData.lastVisit,
+          type: type,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          screenResolution: `${window.screen.width}x${window.screen.height}`,
+          language: navigator.language,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          ...eventData
+        };
+
+        if (DEBUG) console.log('[Tracker]', type, data);
 
         const response = await fetch(TRACKER_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            clientId: this.clientId,
-            type: data.type,
-            url: window.location.href,
-            ...data
-          }),
-          credentials: 'include' // Include cookies if needed
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        console.log(`Event tracked: ${data.type}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        // Update last visit after successful tracking
+        updateLastVisit();
       } catch (error) {
         console.error('Tracking error:', error);
       }
     }
   };
 
-  window.NewsletterTracker('track', {
-    event_type: 'page_view',
-    page_url: window.location.href,
-    data: {
-      title: document.title,
-      referrer: document.referrer
-    }
+  // Start tracking with returning user data
+  window.NewsletterTracker.sendEvent('page_view', {
+    isNewSession: !window.NewsletterTracker.anonymousData.lastVisit,
+    sessionCount: window.NewsletterTracker.anonymousData.visitCount
   });
+
 })(window, document); 

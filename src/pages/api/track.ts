@@ -6,18 +6,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { clientId, type, ...eventData } = req.body;
+    const { clientId, anonymousId, type, ...eventData } = req.body;
 
     // Validate request
-    if (!clientId || !type) {
+    if (!anonymousId || !type) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     // Store in Supabase
     const { data, error } = await supabase
-      .from('tracking_events')
+      .from('anonymous_events')
       .insert({
-        client_id: clientId,
+        anonymous_id: anonymousId,
+        client_id: clientId, // This can be null for pure anonymous events
         event_type: type,
         page_url: eventData.url,
         user_agent: req.headers['user-agent'],
