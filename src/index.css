@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .input-modern {
+    @apply block w-full px-6 py-4 border-2 border-gray-200 
+    bg-white/50 backdrop-blur-sm
+    text-gray-700 text-base
+    transition-all duration-200
+    hover:border-indigo-300
+    focus:border-indigo-500 focus:ring-0 focus:outline-none
+    placeholder:text-gray-400 placeholder:text-sm
+    disabled:bg-gray-50 disabled:cursor-not-allowed;
+  }
+
+  .input-modern-sm {
+    @apply px-4 py-2.5 text-sm;
+  }
+
+  .input-modern-lg {
+    @apply px-7 py-5 text-lg;
+  }
+
+  .textarea-modern {
+    @apply input-modern resize-none min-h-[120px]
+    scrollbar scrollbar-w-2 scrollbar-track-transparent
+    scrollbar-thumb-gray-300 hover:scrollbar-thumb-indigo-300;
+  }
+
+  .select-modern {
+    @apply input-modern appearance-none bg-no-repeat bg-[right_1.5rem_center]
+    bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M10%203a1%201%200%2001.707.293l3%203a1%201%200%2001-1.414%201.414L10%205.414%207.707%207.707a1%201%200%2001-1.414-1.414l3-3A1%201%200%200110%203zm-3.707%209.293a1%201%200%20011.414%200L10%2014.586l2.293-2.293a1%201%200%20011.414%201.414l-3%203a1%201%200%2001-1.414%200l-3-3a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')]
+    pr-12;
+  }
+
+  .checkbox-modern {
+    @apply h-5 w-5 border-2 border-gray-300
+    text-indigo-600
+    transition-colors duration-200
+    focus:ring-0 focus:outline-none
+    hover:border-indigo-300
+    checked:hover:bg-indigo-600;
+  }
+
+  .radio-modern {
+    @apply checkbox-modern rounded-full;
+  }
+
+  /* Modern floating label */
+  .input-floating-label {
+    @apply relative;
+  }
+
+  .input-floating-label input {
+    @apply input-modern pt-7 pb-3;
+  }
+
+  .input-floating-label label {
+    @apply absolute left-6 top-4 text-gray-400 text-sm
+    transition-all duration-200 transform origin-[0];
+  }
+
+  .input-floating-label input:focus ~ label,
+  .input-floating-label input:not(:placeholder-shown) ~ label {
+    @apply transform scale-75 -translate-y-3 text-indigo-500;
+  }
+
+  /* Modern search input */
+  .search-modern {
+    @apply relative;
+  }
+
+  .search-modern input {
+    @apply input-modern pl-12;
+  }
+
+  .search-modern svg {
+    @apply absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400
+    transition-colors duration-200;
+  }
+
+  .search-modern input:focus ~ svg {
+    @apply text-indigo-500;
+  }
+}
