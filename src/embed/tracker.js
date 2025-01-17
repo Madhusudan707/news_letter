@@ -110,4 +110,13 @@
       }
     }
   };
+
+  window.NewsletterTracker('track', {
+    event_type: 'page_view',
+    page_url: window.location.href,
+    data: {
+      title: document.title,
+      referrer: document.referrer
+    }
+  });
 })(window, document); 
